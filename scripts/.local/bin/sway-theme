@@ -37,7 +37,7 @@ IMAGE_TYPES = {".png", ".jpg", ".jpeg"}
 TILE_MAX = 256
 # Window opacity, 1.0 = solid. Terminals get it as background-only alpha so
 # text stays sharp. Every other window is faded whole by sway, text included.
-OPACITY = 0.92
+OPACITY = 0.95
 # foot windows go by these app_ids. They're excluded from sway's opacity
 # because foot already handles its own.
 FOOT_APP_IDS = ["foot", "cheatsheet", "yazi"]

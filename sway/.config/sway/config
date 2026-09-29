@@ -1,10 +1,5 @@
-# Palette
-set $bg     #120d05
-set $panel  #2a1f0e
-set $dim    #8a5e00
-set $amber  #ffb000
-set $hi     #ffd480
-set $red    #d7503c
+# Colors: $bg $panel $dim $fg $accent $hi $red, written by sway-theme
+include ~/.config/sway/theme
 
 set $mod   Mod4
 set $left  h
@@ -20,8 +15,8 @@ default_border pixel 2
 default_floating_border pixel 2
 
 # class                 border  bg      text    indicator child_border
-client.focused          $amber  $amber  $bg     $hi       $amber
-client.focused_inactive $dim    $panel  $amber  $dim      $dim
+client.focused          $accent $accent $bg     $hi       $accent
+client.focused_inactive $dim    $panel  $fg     $dim      $dim
 client.unfocused        $panel  $bg     $dim    $panel    $panel
 client.urgent           $red    $red    $bg     $red      $red
 
@@ -54,6 +49,7 @@ bindsym $mod+Shift+c reload
 bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit sway?' -B 'Yes' 'swaymsg exit'
 bindsym $mod+Escape exec swaylock -f
 bindsym $mod+i exec foot --app-id=cheatsheet ~/.local/bin/sway-cheatsheet
+bindsym $mod+t exec ~/.local/bin/sway-theme --pick
 floating_modifier $mod normal
 
 ### Focus and move

@@ -42,6 +42,7 @@ LABELS = {
     'grim -g "$(slurp)" - | wl-copy': "drag a region, copy to clipboard",
     "grim ~/Pictures/screenshot-$(date +%F-%H%M%S).png": "whole screen, save to ~/Pictures",
     "foot --app-id=cheatsheet ~/.local/bin/sway-cheatsheet": "this cheat sheet",
+    "~/.local/bin/sway-theme --pick": "pick a color theme",
 }
 
 

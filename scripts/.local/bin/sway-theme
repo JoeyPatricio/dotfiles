@@ -172,7 +172,10 @@ def render(source, p, wallpaper=None):
     term = "\n".join(f"{k}={p[k]}" for k in TERM)
     if wallpaper:
         mode = "tile" if max(image_size(wallpaper)) <= TILE_MAX else "fill"
-        background = f'output * bg "{wallpaper}" {mode}\n'
+        # ~ rather than the absolute path, so the generated file works for
+        # any username. sway expands it.
+        where = "~/" + str(wallpaper.relative_to(Path.home()))
+        background = f'output * bg "{where}" {mode}\n'
     else:
         background = f"output * bg #{p['bg']} solid_color\n"
     return {

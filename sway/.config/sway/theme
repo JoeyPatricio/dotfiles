@@ -8,4 +8,4 @@ set $hi #c0c0c0
 set $red #ff5555
 set $accent_text #ffffff
 set $opacity 0.95
-output * bg "/home/joe/dotfiles/wallpapers/setup.png" fill
+output * bg "~/dotfiles/wallpapers/setup.png" fill

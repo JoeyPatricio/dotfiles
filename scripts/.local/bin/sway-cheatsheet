@@ -23,6 +23,8 @@ LABELS = {
     "kill": "close window",
     "reload": "reload sway config",
     "swaylock -f": "lock screen",
+    "~/.local/bin/sway-power": "power menu (lock, suspend, reboot...)",
+    "cliphist list | fuzzel --dmenu --with-nth=2 --prompt='clipboard> ' | cliphist decode | wl-copy": "clipboard history",
     "splith": "next window opens to the right",
     "splitv": "next window opens below",
     "layout stacking": "stacked layout",

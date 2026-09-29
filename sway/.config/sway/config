@@ -43,6 +43,9 @@ exec waybar
 exec mako
 exec nm-applet --indicator
 exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+exec ~/.local/bin/sway-battery-watch
+# Clipboard history for Super+C. Stores text and images.
+exec wl-paste --watch cliphist store
 
 ### Basics
 bindsym $mod+Return exec $term
@@ -52,7 +55,8 @@ bindsym $mod+f exec foot --app-id=yazi yazi ~
 bindsym $mod+q kill
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit sway?' -B 'Yes' 'swaymsg exit'
-bindsym $mod+Escape exec swaylock -f
+bindsym $mod+Escape exec ~/.local/bin/sway-power
+bindsym $mod+c exec cliphist list | fuzzel --dmenu --with-nth=2 --prompt='clipboard> ' | cliphist decode | wl-copy
 bindsym $mod+i exec foot --app-id=cheatsheet ~/.local/bin/sway-cheatsheet
 bindsym $mod+t exec ~/.local/bin/sway-theme --next
 bindsym $mod+Shift+t exec ~/.local/bin/sway-theme --pick-wallpaper

@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+"""Send a notification when the battery runs low. Started once by the sway config.
+
+    sway-battery-watch                    check every minute, forever
+    sway-battery-watch --check PCT STATUS evaluate one fake reading and exit
+
+Warns once at 15% and again, as a critical notification that stays until
+dismissed, at 5%. Plugging in resets both. Exits quietly on machines with no
+battery, so the same sway config works on a desktop.
+"""
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+WARN, CRITICAL = 15, 5
+INTERVAL = 60
+
+
+class Watcher:
+    def __init__(self):
+        self.warned = set()
+
+    def update(self, capacity, status):
+        if status != "Discharging":
+            self.warned.clear()
+            return
+        due = [lvl for lvl in (CRITICAL, WARN) if capacity <= lvl and lvl not in self.warned]
+        if not due:
+            return
+        # Only the lowest threshold crossed gets a notification. Starting up
+        # at 4% shouldn't produce a 15% warning and a 5% warning back to back.
+        level = min(due)
+        self.warned.update(lvl for lvl in (CRITICAL, WARN) if capacity <= lvl)
+        urgency = "critical" if level == CRITICAL else "normal"
+        subprocess.run(["notify-send", "-u", urgency, f"Battery at {capacity}%",
+                        "Plug in soon." if level == WARN else "Plug in now."])
+
+
+def main():
+    watcher = Watcher()
+    if sys.argv[1:2] == ["--check"]:
+        watcher.update(int(sys.argv[2]), sys.argv[3])
+        return
+    batteries = sorted(Path("/sys/class/power_supply").glob("BAT*"))
+    if not batteries:
+        return
+    bat = batteries[0]
+    while True:
+        try:
+            watcher.update(int((bat / "capacity").read_text()),
+                           (bat / "status").read_text().strip())
+        except (OSError, ValueError):
+            pass
+        time.sleep(INTERVAL)
+
+
+if __name__ == "__main__":
+    main()

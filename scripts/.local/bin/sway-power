@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+"""Power menu in fuzzel: lock, suspend, log out, reboot, shut down.
+
+    sway-power            show the menu and run the choice
+    sway-power --dry-run  show the menu, print the command instead of running it
+
+Lock comes first so Super+Escape then Enter still just locks.
+"""
+import subprocess
+import sys
+
+ACTIONS = {
+    "lock": ["swaylock", "-f"],
+    # swayidle's before-sleep hook locks the screen, so no lock step here.
+    "suspend": ["systemctl", "suspend"],
+    "log out": ["swaymsg", "exit"],
+    "reboot": ["systemctl", "reboot"],
+    "shut down": ["systemctl", "poweroff"],
+}
+
+
+def main():
+    dry_run = sys.argv[1:] == ["--dry-run"]
+    choice = subprocess.run(
+        ["fuzzel", "--dmenu", "--prompt=power> ", f"--lines={len(ACTIONS)}", "--width=20"],
+        input="\n".join(ACTIONS), capture_output=True, text=True).stdout.strip()
+    if choice not in ACTIONS:
+        return
+    if dry_run:
+        print(" ".join(ACTIONS[choice]))
+    else:
+        subprocess.run(ACTIONS[choice])
+
+
+if __name__ == "__main__":
+    main()

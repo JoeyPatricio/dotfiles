@@ -20,6 +20,11 @@ client.focused_inactive $dim    $panel  $fg     $dim      $dim
 client.unfocused        $panel  $bg     $dim    $panel    $panel
 client.urgent           $red    $red    $bg     $red      $red
 
+# See-through windows. $opacity comes from sway-theme. foot does its own
+# background-only transparency, so its windows are left out here.
+for_window [app_id="^(?!(foot|cheatsheet|yazi)$).*"] opacity $opacity
+for_window [class=".*"] opacity $opacity
+
 for_window [app_id="cheatsheet"] floating enable, resize set 840 940, move position center
 
 input type:touchpad {

@@ -7,4 +7,5 @@ set $accent #ac5858
 set $hi #c0c0c0
 set $red #ff5555
 set $accent_text #ffffff
+set $opacity 0.92
 output * bg "/home/joe/dotfiles/wallpapers/tiles.png" tile

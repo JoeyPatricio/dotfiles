@@ -20,8 +20,6 @@ client.focused_inactive $dim    $panel  $fg     $dim      $dim
 client.unfocused        $panel  $bg     $dim    $panel    $panel
 client.urgent           $red    $red    $bg     $red      $red
 
-output * bg $bg solid_color
-
 for_window [app_id="cheatsheet"] floating enable, resize set 840 940, move position center
 
 input type:touchpad {
@@ -51,7 +49,9 @@ bindsym $mod+Shift+c reload
 bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit sway?' -B 'Yes' 'swaymsg exit'
 bindsym $mod+Escape exec swaylock -f
 bindsym $mod+i exec foot --app-id=cheatsheet ~/.local/bin/sway-cheatsheet
-bindsym $mod+t exec ~/.local/bin/sway-theme --pick
+bindsym $mod+t exec ~/.local/bin/sway-theme --next
+bindsym $mod+Shift+t exec ~/.local/bin/sway-theme --pick-wallpaper
+bindsym $mod+Ctrl+t exec ~/.local/bin/sway-theme --pick
 floating_modifier $mod normal
 
 ### Focus and move

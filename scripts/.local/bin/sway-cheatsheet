@@ -18,6 +18,7 @@ MAX_CMD = 64
 LABELS = {
     "foot": "terminal",
     "fuzzel": "launcher",
+    "foot --app-id=yazi yazi ~": "file manager (yazi)",
     "google-chrome-stable --new-window https://www.google.com": "Chrome, new window on Google",
     "kill": "close window",
     "reload": "reload sway config",

@@ -45,6 +45,7 @@ exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 bindsym $mod+Return exec $term
 bindsym $mod+d exec $menu
 bindsym $mod+s exec google-chrome-stable --new-window https://www.google.com
+bindsym $mod+f exec foot --app-id=yazi yazi ~
 bindsym $mod+q kill
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit sway?' -B 'Yes' 'swaymsg exit'
@@ -100,7 +101,7 @@ bindsym $mod+v splitv
 bindsym $mod+Shift+s layout stacking
 bindsym $mod+w layout tabbed
 bindsym $mod+e layout toggle split
-bindsym $mod+f fullscreen
+bindsym $mod+Shift+f fullscreen
 bindsym $mod+Shift+space floating toggle
 bindsym $mod+space focus mode_toggle
 

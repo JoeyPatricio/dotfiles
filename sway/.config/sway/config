@@ -27,6 +27,8 @@ client.urgent           $red    $red    $bg     $red      $red
 
 output * bg $bg solid_color
 
+for_window [app_id="cheatsheet"] floating enable, resize set 840 940, move position center
+
 input type:touchpad {
     tap enabled
     natural_scroll enabled
@@ -47,10 +49,11 @@ exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 ### Basics
 bindsym $mod+Return exec $term
 bindsym $mod+d exec $menu
-bindsym $mod+Shift+q kill
+bindsym $mod+q kill
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit sway?' -B 'Yes' 'swaymsg exit'
 bindsym $mod+Escape exec swaylock -f
+bindsym $mod+i exec foot --app-id=cheatsheet ~/.local/bin/sway-cheatsheet
 floating_modifier $mod normal
 
 ### Focus and move

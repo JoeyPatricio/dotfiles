@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+"""Print the bindsym lines from the sway config, grouped under its ### headings.
+
+Read from the live config rather than a hand-kept list, so the sheet can't
+drift out of date when a binding changes.
+"""
+import re
+import sys
+import termios
+import tty
+from pathlib import Path
+
+CONFIG = Path.home() / ".config/sway/config"
+BOLD, RESET = "\033[1m", "\033[0m"
+MAX_CMD = 64
+
+# Plain-English labels for sway commands. Anything not listed shows as-is.
+LABELS = {
+    "foot": "terminal",
+    "fuzzel": "launcher",
+    "kill": "close window",
+    "reload": "reload sway config",
+    "swaylock -f": "lock screen",
+    "splith": "next window opens to the right",
+    "splitv": "next window opens below",
+    "layout stacking": "stacked layout",
+    "layout tabbed": "tabbed layout",
+    "layout toggle split": "back to split layout",
+    "fullscreen": "fullscreen",
+    "floating toggle": "float / unfloat window",
+    "focus mode_toggle": "switch focus between floating and tiled",
+    'mode "default"': "leave this mode",
+    'mode "resize"': "resize mode",
+    "workspace number 1..10": "switch to workspace 1..10",
+    "move container to workspace number 1..10": "send window to workspace 1..10",
+    "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+": "volume up",
+    "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-": "volume down",
+    "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle": "mute",
+    "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle": "mute microphone",
+    "brightnessctl set 5%+": "brightness up",
+    "brightnessctl set 5%-": "brightness down",
+    'grim -g "$(slurp)" - | wl-copy': "drag a region, copy to clipboard",
+    "grim ~/Pictures/screenshot-$(date +%F-%H%M%S).png": "whole screen, save to ~/Pictures",
+    "foot --app-id=cheatsheet ~/.local/bin/sway-cheatsheet": "this cheat sheet",
+}
+
+
+def parse(lines):
+    variables = {}
+    sections = []  # [heading, [(key, command), ...]]
+    current = ["General", []]
+    sections.append(current)
+    before_mode = None
+
+    for raw in lines:
+        line = raw.strip()
+        if line.startswith("### "):
+            current = [re.sub(r"\s*\(.*\)$", "", line[4:]), []]
+            sections.append(current)
+            continue
+        m = re.match(r'mode\s+"([^"]+)"\s*\{', line)
+        if m:
+            before_mode = current
+            current = [f"{m.group(1).capitalize()} mode", []]
+            sections.append(current)
+            continue
+        if line == "}" and before_mode is not None:
+            current, before_mode = before_mode, None
+            continue
+        m = re.match(r"set\s+(\$\w+)\s+(.+)", line)
+        if m:
+            variables[m.group(1)] = m.group(2)
+            continue
+        if not line.startswith("bindsym "):
+            continue
+
+        parts = line.split(None, 1)[1].split()
+        while parts and parts[0].startswith("--"):
+            parts.pop(0)
+        key, command = parts[0], " ".join(parts[1:])
+        current[1].append((key, command))
+
+    # $mod's value is Mod4, which means nothing to a reader
+    display = dict(variables, **{"$mod": "Super"})
+    def expand(text):
+        for name in sorted(display, key=len, reverse=True):
+            text = text.replace(name, display[name])
+        return text
+
+    return [
+        (heading, [(expand(k), expand(c)) for k, c in binds])
+        for heading, binds in sections
+        if binds
+    ]
+
+
+def pretty_key(key):
+    *mods, last = key.split("+")
+    if len(last) == 1:
+        last = last.upper()
+    return "+".join(mods + [last])
+
+
+def merge_same_command(binds):
+    """Super+h and Super+Left both focus left: show them on one row."""
+    merged = {}
+    for key, cmd in binds:
+        merged.setdefault(cmd, []).append(key)
+    return [(" / ".join(keys), cmd) for cmd, keys in merged.items()]
+
+
+def collapse(binds):
+    """Fold runs like Super+1..Super+0 -> workspace number 1..10 into one row."""
+    out = []
+    for key, cmd in binds:
+        km = re.match(r"(.*\+)(\d)$", key)
+        cm = re.match(r"(.*?)(\d+)$", cmd)
+        if km and cm and out and out[-1][2] == (km.group(1), cm.group(1)):
+            prev = out[-1]
+            out[-1] = (prev[0], prev[1], prev[2], km.group(2), cm.group(2))
+            continue
+        group = (km.group(1), cm.group(1)) if km and cm else None
+        out.append((key, cmd, group, None, None))
+
+    rows = []
+    for key, cmd, group, last_k, last_c in out:
+        if last_k is not None:
+            key = f"{key}..{last_k[-1]}"
+            cmd = f"{cmd}..{last_c}"
+        rows.append((key, cmd))
+    return rows
+
+
+def rows(binds):
+    return merge_same_command(collapse([(pretty_key(k), c) for k, c in binds]))
+
+
+def render(sections):
+    width = max(len(k) for _, binds in sections for k, _ in rows(binds))
+    out = []
+    for heading, binds in sections:
+        out.append(f"{BOLD}{heading}{RESET}")
+        for key, cmd in rows(binds):
+            cmd = cmd.removeprefix("exec ")
+            if cmd.startswith("swaynag") and "swaymsg exit" in cmd:
+                cmd = "log out"
+            cmd = LABELS.get(cmd, cmd)
+            if len(cmd) > MAX_CMD:
+                cmd = cmd[: MAX_CMD - 3] + "..."
+            out.append(f"  {key:<{width}}  {cmd}")
+        out.append("")
+    out.append("any key to close")
+    return "\n".join(out) + "\n"
+
+
+def main():
+    text = render(parse(CONFIG.read_text().splitlines()))
+    sys.stdout.write(text)
+    # No pager: less isn't installed here, and the sheet fits the window.
+    if sys.stdin.isatty():
+        sys.stdout.flush()
+        fd = sys.stdin.fileno()
+        saved = termios.tcgetattr(fd)
+        try:
+            tty.setcbreak(fd)
+            sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, saved)
+
+
+if __name__ == "__main__":
+    main()

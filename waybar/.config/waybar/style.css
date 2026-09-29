@@ -26,6 +26,10 @@ window#waybar {
 #workspaces button.urgent  { background: @red;   color: @bg; }
 #workspaces button:hover   { background: @dim;   color: @bg; }
 
+/* The blank workspace from sway-next-workspace, styled like an unused button */
+#custom-ws-next       { padding: 0 6px; color: @dim; }
+#custom-ws-next:hover { background: @dim; color: @bg; }
+
 #mode { background: @hi; color: @bg; padding: 0 6px; }
 
 #cpu, #memory, #wireplumber, #network, #battery, #clock, #tray {

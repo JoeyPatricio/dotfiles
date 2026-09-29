@@ -139,3 +139,7 @@ bindsym Shift+Print exec grim ~/Pictures/screenshot-$(date +%F-%H%M%S).png
 # Arch's snippets: pass WAYLAND_DISPLAY etc. to systemd and D-Bus.
 # Portals, mako's D-Bus activation and the keyring depend on it.
 include /etc/sway/config.d/*
+
+# This machine's own settings (monitors, input), created by machine-init.
+# Last so it can override anything above. Not in the dotfiles repo.
+include ~/.config/machine/sway.conf

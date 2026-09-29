@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+"""Create this machine's own settings in ~/.config/machine/.
+
+Run once on each new machine, after stow. Files that already exist are left
+alone, so it's safe to run again.
+
+The folder is outside the dotfiles repo on purpose. Settings that differ
+between the laptop and the desktop go here instead of in the shared configs,
+where they'd flip back and forth on every sync:
+
+    sway.conf      included at the end of the sway config, so it can
+                   override anything: monitors, scaling, input devices
+    waybar.jsonc   merged into the bar config key by key. The shared config
+                   wins where both set the same key.
+"""
+import json
+from pathlib import Path
+
+DIR = Path.home() / ".config/machine"
+
+SWAY = """\
+# This machine only. Not in the dotfiles repo. Included at the end of the
+# sway config, so anything here overrides the shared settings.
+# Reload with Super+Shift+C.
+#
+# List monitors with: swaymsg -t get_outputs
+# output eDP-1 scale 1.25
+# output HDMI-A-1 pos 1920 0
+#
+# List input devices with: swaymsg -t get_inputs
+# input type:keyboard xkb_layout us
+"""
+
+
+def waybar():
+    wifi = sorted(p.name for p in Path("/sys/class/net").glob("wl*"))
+    config = {}
+    if wifi:
+        # Without this, waybar shows whichever interface came up first, which
+        # is a VPN's tun0 whenever one is connected.
+        config["network"] = {"interface": wifi[0]}
+    header = ("// This machine only. Not in the dotfiles repo. Merged into\n"
+              "// ~/.config/waybar/config.jsonc key by key; that file wins on conflicts.\n")
+    return header + json.dumps(config, indent=2) + "\n"
+
+
+def main():
+    DIR.mkdir(parents=True, exist_ok=True)
+    for name, text in (("sway.conf", SWAY), ("waybar.jsonc", waybar())):
+        path = DIR / name
+        if path.exists():
+            print(f"kept    {path}")
+        else:
+            path.write_text(text)
+            print(f"created {path}")
+
+
+if __name__ == "__main__":
+    main()

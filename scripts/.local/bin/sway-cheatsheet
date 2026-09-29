@@ -18,6 +18,7 @@ MAX_CMD = 64
 LABELS = {
     "foot": "terminal",
     "fuzzel": "launcher",
+    "google-chrome-stable --new-window https://www.google.com": "Chrome, new window on Google",
     "kill": "close window",
     "reload": "reload sway config",
     "swaylock -f": "lock screen",

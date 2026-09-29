@@ -21,6 +21,7 @@ THEMES = DOT / "themes"
 CURRENT = THEMES / "current"
 
 UI = ["bg", "panel", "dim", "fg", "accent", "hi", "red"]
+OPTIONAL = ["accent_text"]
 TERM = [f"regular{i}" for i in range(8)] + [f"bright{i}" for i in range(8)]
 
 
@@ -38,6 +39,12 @@ def load(name):
     bad = [k for k, v in p.items() if not re.fullmatch(r"[0-9a-f]{6}", v)]
     if missing or bad:
         sys.exit(f"{path}: missing {missing or 'nothing'}, bad hex {bad or 'none'}")
+    # Text drawn on top of the accent (focused title, active workspace,
+    # selected launcher row). Defaults to bg, which works for bright accents.
+    # Dark accents need a light color here instead.
+    p.setdefault("accent_text", p["bg"])
+    if not re.fullmatch(r"[0-9a-f]{6}", p["accent_text"]):
+        sys.exit(f"{path}: bad hex for accent_text")
     return p
 
 
@@ -50,16 +57,16 @@ def render(name, p):
     term = "\n".join(f"{k}={p[k]}" for k in TERM)
     return {
         "sway/.config/sway/theme": f"# {note}\n"
-        + "".join(f"set ${k} #{p[k]}\n" for k in UI),
+        + "".join(f"set ${k} #{p[k]}\n" for k in UI + OPTIONAL),
 
         "waybar/.config/waybar/theme.css": f"/* {note} */\n"
-        + "".join(f"@define-color {k} #{p[k]};\n" for k in UI),
+        + "".join(f"@define-color {k} #{p[k]};\n" for k in UI + OPTIONAL),
 
         "foot/.config/foot/theme.ini": f"""# {note}
 [colors-dark]
 background={p['bg']}
 foreground={p['fg']}
-cursor={p['bg']} {p['accent']}
+cursor={p['accent_text']} {p['accent']}
 selection-foreground={p['bg']}
 selection-background={p['hi']}
 {term}
@@ -73,8 +80,8 @@ prompt={p['hi']}ff
 input={p['hi']}ff
 match={p['hi']}ff
 selection={p['accent']}ff
-selection-text={p['bg']}ff
-selection-match={p['bg']}ff
+selection-text={p['accent_text']}ff
+selection-match={p['accent_text']}ff
 border={p['accent']}ff
 """,
 

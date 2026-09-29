@@ -1,4 +1,4 @@
-/* Colors: @bg @panel @dim @fg @accent @hi @red, written by sway-theme */
+/* Colors: @bg @panel @dim @fg @accent @accent_text @hi @red, written by sway-theme */
 @import url("theme.css");
 
 * {
@@ -22,7 +22,7 @@ window#waybar {
     color: @dim;
     background: transparent;
 }
-#workspaces button.focused { background: @accent; color: @bg; }
+#workspaces button.focused { background: @accent; color: @accent_text; }
 #workspaces button.urgent  { background: @red;   color: @bg; }
 #workspaces button:hover   { background: @dim;   color: @bg; }
 

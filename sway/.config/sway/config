@@ -1,4 +1,4 @@
-# Colors: $bg $panel $dim $fg $accent $hi $red, written by sway-theme
+# Colors: $bg $panel $dim $fg $accent $accent_text $hi $red, written by sway-theme
 include ~/.config/sway/theme
 
 set $mod   Mod4
@@ -15,7 +15,7 @@ default_border pixel 2
 default_floating_border pixel 2
 
 # class                 border  bg      text    indicator child_border
-client.focused          $accent $accent $bg     $hi       $accent
+client.focused          $accent $accent $accent_text $hi  $accent
 client.focused_inactive $dim    $panel  $fg     $dim      $dim
 client.unfocused        $panel  $bg     $dim    $panel    $panel
 client.urgent           $red    $red    $bg     $red      $red
@@ -44,6 +44,7 @@ exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 ### Basics
 bindsym $mod+Return exec $term
 bindsym $mod+d exec $menu
+bindsym $mod+s exec google-chrome-stable --new-window https://www.google.com
 bindsym $mod+q kill
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit sway?' -B 'Yes' 'swaymsg exit'
@@ -96,7 +97,7 @@ bindsym $mod+Shift+0 move container to workspace number 10
 ### Layout
 bindsym $mod+b splith
 bindsym $mod+v splitv
-bindsym $mod+s layout stacking
+bindsym $mod+Shift+s layout stacking
 bindsym $mod+w layout tabbed
 bindsym $mod+e layout toggle split
 bindsym $mod+f fullscreen

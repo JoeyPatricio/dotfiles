@@ -1,0 +1,17 @@
+color=120d05
+font=Terminus
+indicator-radius=70
+indicator-thickness=6
+inside-color=120d05
+ring-color=8a5e00
+key-hl-color=ffb000
+bs-hl-color=d7503c
+text-color=ffb000
+line-color=00000000
+separator-color=00000000
+inside-ver-color=120d05
+ring-ver-color=ffd480
+text-ver-color=ffd480
+inside-wrong-color=120d05
+ring-wrong-color=d7503c
+text-wrong-color=d7503c

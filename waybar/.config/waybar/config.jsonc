@@ -1,0 +1,37 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 22,
+  "spacing": 0,
+  "modules-left": ["sway/workspaces", "sway/mode"],
+  "modules-center": ["sway/window"],
+  "modules-right": ["cpu", "memory", "wireplumber", "network", "battery", "clock", "tray"],
+
+  "sway/workspaces": { "disable-scroll": true, "format": "{name}" },
+  "sway/mode": { "format": "[{}]" },
+  "sway/window": { "max-length": 60 },
+  "cpu": { "format": "[cpu {usage}%]", "interval": 5 },
+  "memory": { "format": "[mem {percentage}%]", "interval": 10 },
+  "wireplumber": {
+    "format": "[vol {volume}%]",
+    "format-muted": "[vol mute]",
+    "on-click": "pavucontrol"
+  },
+  "network": {
+    "interface": "wlp2s0",
+    "format-wifi": "[{essid} {signalStrength}%]",
+    "format-ethernet": "[eth]",
+    "format-disconnected": "[offline]",
+    "tooltip-format": "{ifname} {ipaddr}"
+  },
+  "battery": {
+    "format": "[bat {capacity}%]",
+    "format-charging": "[chg {capacity}%]",
+    "states": { "warning": 25, "critical": 10 }
+  },
+  "clock": {
+    "format": "[{:%a %d %b %H:%M}]",
+    "tooltip-format": "<tt>{calendar}</tt>"
+  },
+  "tray": { "spacing": 6 }
+}

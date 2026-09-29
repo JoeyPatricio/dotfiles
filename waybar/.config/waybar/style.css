@@ -1,0 +1,45 @@
+@define-color bg    #120d05;
+@define-color panel #2a1f0e;
+@define-color dim   #8a5e00;
+@define-color amber #ffb000;
+@define-color hi    #ffd480;
+@define-color red   #d7503c;
+
+* {
+    font-family: "Terminus";
+    font-size: 16px;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    text-shadow: none;
+    min-height: 0;
+}
+
+window#waybar {
+    background: @panel;
+    color: @amber;
+    border-bottom: 2px solid @amber;
+}
+
+#workspaces button {
+    padding: 0 6px;
+    color: @dim;
+    background: transparent;
+}
+#workspaces button.focused { background: @amber; color: @bg; }
+#workspaces button.urgent  { background: @red;   color: @bg; }
+#workspaces button:hover   { background: @dim;   color: @bg; }
+
+#mode { background: @hi; color: @bg; padding: 0 6px; }
+
+#cpu, #memory, #wireplumber, #network, #battery, #clock, #tray {
+    padding: 0 6px;
+}
+
+#battery.warning                 { color: @hi; }
+#battery.critical:not(.charging) { color: @red; }
+#network.disconnected,
+#wireplumber.muted               { color: @dim; }
+
+tooltip       { background: @bg; border: 2px solid @amber; }
+tooltip label { color: @amber; }

@@ -1,0 +1,14 @@
+font=Terminus 12
+background-color=#120d05
+text-color=#ffb000
+border-color=#ffb000
+border-size=2
+border-radius=0
+padding=8
+width=360
+icons=0
+default-timeout=6000
+
+[urgency=high]
+border-color=#d7503c
+default-timeout=0

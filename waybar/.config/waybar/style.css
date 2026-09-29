@@ -32,13 +32,12 @@ window#waybar {
 
 #mode { background: @hi; color: @bg; padding: 0 6px; }
 
-#cpu, #memory, #wireplumber, #network, #battery, #clock, #tray {
+#cpu, #wireplumber, #battery, #clock, #tray {
     padding: 0 6px;
 }
 
 #battery.warning                 { color: @hi; }
 #battery.critical:not(.charging) { color: @red; }
-#network.disconnected,
 #wireplumber.muted               { color: @dim; }
 
 tooltip       { background: @bg; border: 2px solid @accent; }

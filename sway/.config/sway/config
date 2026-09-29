@@ -13,6 +13,8 @@ font pango:Terminus 12
 
 default_border pixel 2
 default_floating_border pixel 2
+# New workspaces start tabbed, like pressing Super+W. Super+E goes back to split.
+workspace_layout tabbed
 
 # class                 border  bg      text    indicator child_border
 client.focused          $accent $accent $accent_text $hi  $accent
@@ -46,6 +48,8 @@ exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 exec ~/.local/bin/sway-battery-watch
 # Clipboard history for Super+C. Stores text and images.
 exec wl-paste --watch cliphist store
+# A terminal to start with. exec, not exec_always, so reloading doesn't open more.
+exec $term
 
 ### Basics
 bindsym $mod+Return exec $term

@@ -40,7 +40,7 @@ TILE_MAX = 256
 OPACITY = 0.92
 # foot windows go by these app_ids. They're excluded from sway's opacity
 # because foot already handles its own.
-FOOT_APP_IDS = ["foot", "cheatsheet", "yazi"]
+FOOT_APP_IDS = ["foot", "cheatsheet", "yazi", "notes"]
 
 UI = ["bg", "panel", "dim", "fg", "accent", "hi", "red"]
 OPTIONAL = ["accent_text"]

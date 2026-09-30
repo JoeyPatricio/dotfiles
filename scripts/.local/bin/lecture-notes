@@ -1,0 +1,121 @@
+#!/usr/bin/env python3
+"""See-through notes window over whatever's on screen.
+
+    lecture-notes          show or hide the window. The first time, pick a
+                           notes file first (Super+N)
+    lecture-notes --pick   pick a notes file and switch the window to it,
+                           starting the window if needed (Super+Shift+N)
+
+One running file per class or activity in $NOTES_DIR (default ~/notes), e.g.
+447.md. Picking a file adds a "## YYYY-MM-DD" heading the first time it's
+opened each day and puts the cursor under it. The picker lists files most
+recently used first. Type a new name to start a new file (Shift+Enter if it
+prefix-matches an existing one).
+
+The sway config floats the window, keeps it on every workspace and parks it
+in the scratchpad, so toggling never moves focus off Zoom for long.
+"""
+import json
+import os
+import re
+import subprocess
+import sys
+from datetime import date
+from pathlib import Path
+
+APP_ID = "notes"
+NOTES = Path(os.environ.get("NOTES_DIR", Path.home() / "notes"))
+# nvim listens here so --pick can switch files in the running window.
+SOCKET = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "lecture-notes.nvim"
+# Background alpha only. sway's opacity would fade the text too, which is
+# unreadable over a slide with a white background. alpha-mode=all because
+# nvim paints its own background, which foot otherwise leaves opaque.
+ALPHA = 0.75
+
+
+def find_window(node):
+    if node.get("app_id") == APP_ID:
+        return node
+    for child in node.get("nodes", []) + node.get("floating_nodes", []):
+        found = find_window(child)
+        if found:
+            return found
+    return None
+
+
+def pick():
+    """Ask for a notes file in fuzzel. Returns its path, or None if cancelled."""
+    files = sorted(NOTES.glob("*.md"), key=lambda f: f.stat().st_mtime, reverse=True)
+    choice = subprocess.run(
+        ["fuzzel", "--dmenu", "--prompt=notes> "],
+        input="".join(f"{f.stem}\n" for f in files),
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    # Keep names plain so they can go into an nvim command line unquoted.
+    name = re.sub(r"[^\w.-]+", "-", choice).strip("-.")
+    return NOTES / f"{name}.md" if name else None
+
+
+def stamp(path):
+    """Add today's heading, once per day. New files get a title first."""
+    today = f"## {date.today()}"
+    text = path.read_text() if path.exists() else f"# {path.stem}\n"
+    if re.search(rf"^{today}$", text, re.M):
+        return
+    path.write_text(text.rstrip("\n") + f"\n\n{today}\n\n")
+
+
+def swaymsg(command):
+    subprocess.run(["swaymsg", command], stdout=subprocess.DEVNULL)
+
+
+def nvim(flag, arg):
+    subprocess.run(
+        ["nvim", "--server", str(SOCKET), flag, arg], stdout=subprocess.DEVNULL
+    )
+
+
+tree = json.loads(
+    subprocess.run(
+        ["swaymsg", "-t", "get_tree"], capture_output=True, text=True, check=True
+    ).stdout
+)
+window = find_window(tree)
+
+if window and "--pick" not in sys.argv:
+    swaymsg(f'[app_id="{APP_ID}"] scratchpad show')
+    sys.exit()
+
+NOTES.mkdir(parents=True, exist_ok=True)
+path = pick()
+if path is None:
+    sys.exit()
+
+if window:
+    # Save everything before stamping, so the heading never lands under
+    # unsaved edits. --remote-expr waits for the write to finish.
+    nvim("--remote-expr", "execute('silent! wall')")
+    stamp(path)
+    # checktime picks up the heading if the file was already open.
+    # <C-\><C-N> gets to normal mode from whatever mode nvim is in.
+    nvim("--remote-send", f"<C-\\><C-N>:edit {path} | checktime | normal! G<CR>A")
+    if not window["visible"]:
+        swaymsg(f'[app_id="{APP_ID}"] scratchpad show')
+    swaymsg(f'[app_id="{APP_ID}"] focus')
+else:
+    stamp(path)
+    # Left behind if nvim ever died without cleaning up. nvim won't listen on
+    # a path that already exists.
+    SOCKET.unlink(missing_ok=True)
+    os.chdir(NOTES)
+    os.execvp(
+        "foot",
+        [
+            "foot",
+            f"--app-id={APP_ID}",
+            "-o", f"colors-dark.alpha={ALPHA}",
+            "-o", "colors-dark.alpha-mode=all",
+            "nvim", "--listen", str(SOCKET), "+", "+startinsert!", str(path),
+        ],
+    )

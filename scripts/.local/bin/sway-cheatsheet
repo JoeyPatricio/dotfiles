@@ -19,6 +19,8 @@ LABELS = {
     "foot": "terminal",
     "fuzzel": "launcher",
     "foot --app-id=yazi yazi ~": "file manager (yazi)",
+    "~/.local/bin/lecture-notes": "show / hide lecture notes",
+    "~/.local/bin/lecture-notes --pick": "pick which notes file to write in",
     "google-chrome-stable --new-window https://www.google.com": "Chrome, new window on Google",
     "kill": "close window",
     "reload": "reload sway config",

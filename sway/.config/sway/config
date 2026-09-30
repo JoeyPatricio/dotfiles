@@ -24,10 +24,14 @@ client.urgent           $red    $red    $bg     $red      $red
 
 # See-through windows. $opacity comes from sway-theme. foot does its own
 # background-only transparency, so its windows are left out here.
-for_window [app_id="^(?!(foot|cheatsheet|yazi)$).*"] opacity $opacity
+for_window [app_id="^(?!(foot|cheatsheet|yazi|notes)$).*"] opacity $opacity
 for_window [class=".*"] opacity $opacity
 
 for_window [app_id="cheatsheet"] floating enable, resize set 840 940, move position center
+
+# Lecture notes (Super+N): floats down the right side on every workspace.
+# Scratchpad so the same key hides it again. See ~/.local/bin/lecture-notes.
+for_window [app_id="notes"] floating enable, sticky enable, resize set 40 ppt 90 ppt, move position 59 ppt 5 ppt, move scratchpad, scratchpad show
 
 input type:touchpad {
     tap enabled
@@ -56,6 +60,8 @@ bindsym $mod+Return exec $term
 bindsym $mod+d exec $menu
 bindsym $mod+s exec google-chrome-stable --new-window https://www.google.com
 bindsym $mod+f exec foot --app-id=yazi yazi ~
+bindsym $mod+n exec ~/.local/bin/lecture-notes
+bindsym $mod+Shift+n exec ~/.local/bin/lecture-notes --pick
 bindsym $mod+q kill
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit sway?' -B 'Yes' 'swaymsg exit'

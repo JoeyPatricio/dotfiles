@@ -30,7 +30,7 @@ SOCKET = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "lecture-notes.nvim"
 # Background alpha only. sway's opacity would fade the text too, which is
 # unreadable over a slide with a white background. alpha-mode=all because
 # nvim paints its own background, which foot otherwise leaves opaque.
-ALPHA = 0.75
+ALPHA = 0.8
 
 
 def find_window(node):

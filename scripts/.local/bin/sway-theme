@@ -37,7 +37,7 @@ IMAGE_TYPES = {".png", ".jpg", ".jpeg"}
 TILE_MAX = 256
 # Window opacity, 1.0 = solid. Terminals get it as background-only alpha so
 # text stays sharp. Every other window is faded whole by sway, text included.
-OPACITY = 0.92
+OPACITY = 1.0
 # foot windows go by these app_ids. They're excluded from sway's opacity
 # because foot already handles its own.
 FOOT_APP_IDS = ["foot", "cheatsheet", "yazi", "notes"]
@@ -243,18 +243,25 @@ def recolor_open_terminals(p):
     foot only reads its config at startup, so without this, open terminals
     keep the old palette until they're closed.
     """
-    # The [NN] prefix on OSC 11 is background alpha in percent.
     osc = [
         f"\033]10;#{p['fg']}\033\\",
-        f"\033]11;[{round(OPACITY * 100)}]#{p['bg']}\033\\",
         f"\033]12;#{p['accent']}\033\\",
     ]
     osc += [f"\033]4;{i};#{p[k]}\033\\" for i, k in enumerate(TERM)]
-    seq = "".join(osc)
-    ttys = set()
+    # The [NN] prefix on OSC 11 is background alpha in percent. Without it,
+    # foot goes back to the alpha it was started with, so a window launched
+    # with its own (lecture-notes) keeps that instead of getting OPACITY.
+    themed = f"\033]11;[{round(OPACITY * 100)}]#{p['bg']}\033\\" + "".join(osc)
+    own_alpha = f"\033]11;#{p['bg']}\033\\" + "".join(osc)
+    ttys = {}
     for pid in subprocess.run(
         ["pgrep", "-x", "foot"], capture_output=True, text=True
     ).stdout.split():
+        try:
+            args = Path(f"/proc/{pid}/cmdline").read_bytes().split(b"\0")
+        except OSError:
+            continue
+        seq = own_alpha if any(b"colors-dark.alpha=" in a for a in args) else themed
         children = Path(f"/proc/{pid}/task/{pid}/children")
         for child in children.read_text().split() if children.exists() else []:
             try:
@@ -262,8 +269,8 @@ def recolor_open_terminals(p):
             except OSError:
                 continue
             if str(tty).startswith("/dev/pts/"):
-                ttys.add(tty)
-    for tty in ttys:
+                ttys[tty] = seq
+    for tty, seq in ttys.items():
         try:
             with open(tty, "w") as f:
                 f.write(seq)

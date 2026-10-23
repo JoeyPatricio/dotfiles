@@ -53,6 +53,137 @@ LABELS = {
     "~/.local/bin/sway-theme --pick": "pick a full color theme",
 }
 
+# Second page, toggled with g. Hand-kept, since it isn't in the sway config.
+GIT = [
+    ("Look around", [
+        ("git status", "what changed, what's staged"),
+        ("git diff", "unstaged changes"),
+        ("git diff --staged", "what the next commit will contain"),
+        ("git log --oneline -10", "last 10 commits"),
+    ]),
+    ("Branches", [
+        ("git switch -c NAME", "new branch from here"),
+        ("git switch NAME", "go to a branch"),
+        ("git branch", "list branches"),
+    ]),
+    ("Commit", [
+        ("git add FILE", "stage a file"),
+        ("git add -p", "pick which hunks to stage"),
+        ("git restore --staged FILE", "unstage, keep the edits"),
+        ("git restore FILE", "throw away unstaged edits (no undo)"),
+        ('git commit -s -m "msg"', "commit with DCO sign-off"),
+        ("git commit --amend", "fix up the last commit"),
+    ]),
+    ("Sync with upstream", [
+        ("git fetch upstream", "download upstream changes"),
+        ("git rebase upstream/main", "replay your branch on top of them"),
+        ("git pull --rebase", "update the current branch"),
+        ("git push -u origin NAME", "first push of a new branch"),
+        ("git push --force-with-lease", "push after a rebase or amend"),
+    ]),
+    ("Undo", [
+        ("git stash / git stash pop", "shelve edits / bring them back"),
+        ("git reset --soft HEAD~1", "undo last commit, keep changes staged"),
+        ("git rebase --abort", "bail out of a rebase"),
+    ]),
+    ("In nvim (fugitive)", [
+        ("Space gs", "status window: s stage, u unstage, cc commit"),
+    ]),
+]
+
+# Third page, from ~/.config/nvim (leader is Space). Also hand-kept.
+NVIM = [
+    ("Find", [
+        ("Space pf", "find files"),
+        ("Ctrl-p", "find files tracked by git"),
+        ("Space ps", "grep the project"),
+        ("Space pb", "open buffers"),
+        ("Space ph", "search help"),
+        ("Space pv", "file explorer (netrw)"),
+    ]),
+    ("Harpoon", [
+        ("Space a", "add this file to the list"),
+        ("Ctrl-e", "list menu: dd remove, Enter open"),
+        ("Space 1..4", "jump to file 1..4"),
+    ]),
+    ("Code (LSP)", [
+        ("Ctrl-]", "go to definition"),
+        ("K", "hover docs"),
+        ("grr / gri", "references / implementations"),
+        ("grn", "rename symbol"),
+        ("gra", "code action"),
+        ("gO", "symbols in this file"),
+        ("[d / ]d", "previous / next diagnostic"),
+        ("Space f", "format file"),
+    ]),
+    ("Completion menu", [
+        ("Ctrl-space", "open"),
+        ("Ctrl-n / Ctrl-p", "next / previous item"),
+        ("Ctrl-y", "accept"),
+        ("Ctrl-e", "close"),
+    ]),
+    ("Editing", [
+        ("J / K (visual)", "move selected lines down / up"),
+        ("Space p (visual)", "paste over selection, keep register"),
+        ("Space y / Space Y", "yank to system clipboard"),
+        ("Space d", "delete without yanking"),
+        ("Space s", "replace word under cursor in file"),
+        ("Space u", "undo tree"),
+        ("Ctrl-c (insert)", "Escape"),
+    ]),
+    ("Lists and misc", [
+        ("Ctrl-k / Ctrl-j", "next / previous quickfix item"),
+        ("Space k / Space j", "next / previous location list item"),
+        ("Space gs", "git status (fugitive)"),
+        ("Space x", "chmod +x this file"),
+        ("Space Space", "source this file"),
+    ]),
+]
+
+# Fourth page: stock vim motions, plus the centering from remap.lua.
+MOTIONS = [
+    ("Along a line", [
+        ("0 / ^", "start of line / first non-blank"),
+        ("$ (Shift-4)", "end of line"),
+        ("w / b / e", "next word / back a word / end of word"),
+        ("W / B / E", "same, words split only on spaces"),
+        ("f x / F x", "jump to next / previous x on the line"),
+        ("t x / T x", "jump to just before x"),
+        ("; / ,", "repeat last f or t forward / backward"),
+    ]),
+    ("Up and down", [
+        ("gg / G", "top / bottom of file"),
+        ("42G or :42", "go to line 42"),
+        ("{ / }", "previous / next blank line"),
+        ("%", "matching bracket"),
+        ("H / M / L", "top / middle / bottom of screen"),
+        ("Ctrl-d / Ctrl-u", "half page down / up, centered"),
+        ("zz", "center screen on cursor"),
+    ]),
+    ("Search", [
+        ("/text / ?text", "search forward / backward"),
+        ("n / N", "next / previous match, centered"),
+        ("* / #", "word under cursor forward / backward"),
+    ]),
+    ("Jumps", [
+        ("Ctrl-o / Ctrl-i", "back / forward through jump history"),
+        ("ma / 'a", "set mark a / jump back to it"),
+    ]),
+    ("Motions with operators", [
+        ("D / C", "delete / change to end of line"),
+        ("dw / cw / yw", "delete / change / yank a word"),
+        ("diw / ciw", "delete / change the word under cursor"),
+        ('ci" / ci( / cit', "change inside quotes / parens / tag"),
+        ("dd / yy / cc", "delete / yank / change the line"),
+        ("A / I", "insert at end / start of line"),
+        ("o / O", "new line below / above"),
+        ("x / r x", "delete char / replace char with x"),
+        ("u / Ctrl-r", "undo / redo"),
+        (".", "repeat last change"),
+        ("v / V / Ctrl-v", "select chars / lines / block"),
+    ]),
+]
+
 
 def parse(lines):
     variables = {}
@@ -144,37 +275,55 @@ def rows(binds):
     return merge_same_command(collapse([(pretty_key(k), c) for k, c in binds]))
 
 
-def render(sections):
-    width = max(len(k) for _, binds in sections for k, _ in rows(binds))
+def label(cmd):
+    cmd = cmd.removeprefix("exec ")
+    if cmd.startswith("swaynag") and "swaymsg exit" in cmd:
+        cmd = "log out"
+    cmd = LABELS.get(cmd, cmd)
+    if len(cmd) > MAX_CMD:
+        cmd = cmd[: MAX_CMD - 3] + "..."
+    return cmd
+
+
+def render(sections, footer):
+    width = max(len(k) for _, binds in sections for k, _ in binds)
     out = []
     for heading, binds in sections:
         out.append(f"{BOLD}{heading}{RESET}")
-        for key, cmd in rows(binds):
-            cmd = cmd.removeprefix("exec ")
-            if cmd.startswith("swaynag") and "swaymsg exit" in cmd:
-                cmd = "log out"
-            cmd = LABELS.get(cmd, cmd)
-            if len(cmd) > MAX_CMD:
-                cmd = cmd[: MAX_CMD - 3] + "..."
-            out.append(f"  {key:<{width}}  {cmd}")
+        for key, desc in binds:
+            out.append(f"  {key:<{width}}  {desc}")
         out.append("")
-    out.append("any key to close")
+    out.append(footer)
     return "\n".join(out) + "\n"
 
 
 def main():
-    text = render(parse(CONFIG.read_text().splitlines()))
-    sys.stdout.write(text)
-    # No pager: less isn't installed here, and the sheet fits the window.
-    if sys.stdin.isatty():
-        sys.stdout.flush()
-        fd = sys.stdin.fileno()
-        saved = termios.tcgetattr(fd)
-        try:
-            tty.setcbreak(fd)
-            sys.stdin.read(1)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, saved)
+    sway = [
+        (heading, [(key, label(cmd)) for key, cmd in rows(binds)])
+        for heading, binds in parse(CONFIG.read_text().splitlines())
+    ]
+    footer = "s sway, g git, v nvim, m motions, any other key to close"
+    pages = {
+        "s": render(sway, footer),
+        "g": render(GIT, footer),
+        "v": render(NVIM, footer),
+        "m": render(MOTIONS, footer),
+    }
+    # No pager: less isn't installed here, and each page fits the window.
+    if not sys.stdin.isatty():
+        sys.stdout.write("\n".join(pages.values()))
+        return
+    fd = sys.stdin.fileno()
+    saved = termios.tcgetattr(fd)
+    page = "s"
+    try:
+        tty.setcbreak(fd)
+        while page in pages:
+            sys.stdout.write("\033[H\033[2J" + pages[page])
+            sys.stdout.flush()
+            page = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, saved)
 
 
 if __name__ == "__main__":

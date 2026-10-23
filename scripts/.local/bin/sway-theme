@@ -35,12 +35,9 @@ WALLPAPER_BASE = "default"
 IMAGE_TYPES = {".png", ".jpg", ".jpeg"}
 # Images at most this wide/tall are patterns and get tiled, bigger ones fill.
 TILE_MAX = 256
-# Window opacity, 1.0 = solid. Terminals get it as background-only alpha so
-# text stays sharp. Every other window is faded whole by sway, text included.
-OPACITY = 1.0
-# foot windows go by these app_ids. They're excluded from sway's opacity
-# because foot already handles its own.
-FOOT_APP_IDS = ["foot", "cheatsheet", "yazi", "notes"]
+# Terminal background opacity, 1.0 = solid. Only foot gets it, as
+# background-only alpha so text stays sharp. Other windows stay solid.
+OPACITY = 0.93
 
 UI = ["bg", "panel", "dim", "fg", "accent", "hi", "red"]
 OPTIONAL = ["accent_text"]
@@ -181,7 +178,6 @@ def render(source, p, wallpaper=None):
     return {
         "sway/.config/sway/theme": f"# {note}\n"
         + "".join(f"set ${k} #{p[k]}\n" for k in UI + OPTIONAL)
-        + f"set $opacity {OPACITY}\n"
         + background,
         "waybar/.config/waybar/theme.css": f"/* {note} */\n"
         + "".join(f"@define-color {k} #{p[k]};\n" for k in UI + OPTIONAL),
@@ -279,9 +275,6 @@ def recolor_open_terminals(p):
     return len(ttys)
 
 
-NOT_FOOT = f'app_id="^(?!({"|".join(FOOT_APP_IDS)})$).*"'
-
-
 def run(*cmd):
     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -291,10 +284,6 @@ def write_and_reload(current, source, p, wallpaper=None):
         (DOT / rel).write_text(text)
     CURRENT.write_text(current + "\n")
     run("swaymsg", "reload")
-    # for_window rules only touch windows opened after them, so set the
-    # opacity on everything already open too.
-    run("swaymsg", f"[{NOT_FOOT}] opacity {OPACITY}")
-    run("swaymsg", f'[class=".*"] opacity {OPACITY}')
     run("pkill", "-USR2", "-x", "waybar")
     run("makoctl", "reload")
     n = recolor_open_terminals(p)

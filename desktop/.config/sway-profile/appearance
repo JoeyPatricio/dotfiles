@@ -1,0 +1,2 @@
+output * bg "~/.config/sway-profile/wallhaven-jedm1q_1920x1080.png" fill
+client.focused #2f6fb5 #2f6fb5 #ffffff #7fa7c4 #2f6fb5

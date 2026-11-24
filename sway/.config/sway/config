@@ -40,11 +40,13 @@ exec swayidle -w \
     timeout 600 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
     before-sleep 'swaylock -f'
 
-exec waybar
+set $bar waybar
+include ~/.config/sway-profile/config
+exec $bar
+exec ~/.local/bin/sway-battery-watch
 exec mako
 exec nm-applet --indicator
 exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
-exec ~/.local/bin/sway-battery-watch
 # Clipboard history for Super+C. Stores text and images.
 exec wl-paste --watch cliphist store
 # A terminal to start with. exec, not exec_always, so reloading doesn't open more.

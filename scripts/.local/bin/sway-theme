@@ -282,6 +282,15 @@ def run(*cmd):
 def write_and_reload(current, source, p, wallpaper=None):
     for rel, text in render(source, p, wallpaper).items():
         (DOT / rel).write_text(text)
+    # A desktop theme selected from the picker supersedes its login wallpaper.
+    profile = Path.home() / ".config/sway-profile"
+    if (profile / "appearance").is_file():
+        overrides = Path.home() / ".config/machine"
+        overrides.mkdir(parents=True, exist_ok=True)
+        (overrides / "desktop-theme.conf").write_text(
+            "include ~/.config/sway/theme\n"
+            "client.focused $accent $accent $accent_text $hi $accent\n"
+        )
     CURRENT.write_text(current + "\n")
     run("swaymsg", "reload")
     run("pkill", "-USR2", "-x", "waybar")

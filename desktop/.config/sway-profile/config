@@ -1,0 +1,7 @@
+set $bar waybar -c ~/.config/sway-profile/waybar.jsonc -s ~/.config/sway-profile/style.css
+output HDMI-A-1 mode 1920x1080@60Hz pos 0 0
+output DP-1 mode 1920x1080@240Hz pos 1920 151
+input type:keyboard xkb_options altwin:swap_lalt_lwin
+workspace_layout default
+include ~/.config/sway-profile/appearance
+include ~/.config/machine/desktop-theme.conf

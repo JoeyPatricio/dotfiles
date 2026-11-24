@@ -1,0 +1,71 @@
+{
+    "include": ["~/.config/machine/waybar.jsonc"],
+    "layer": "top",
+    "position": "bottom",
+    "height": 24,
+    "spacing": 0,
+
+    "modules-left":   ["sway/workspaces", "sway/window"],
+    "modules-center": ["clock"],
+    "modules-right":  ["mpris", "wireplumber", "network", "cpu", "memory", "battery", "tray", "custom/settings"],
+
+    "sway/workspaces": {
+        "disable-scroll": true,
+        "persistent-workspaces": {
+            "1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": [], "10": []
+        }
+    },
+
+    "sway/window": {
+        "format": "{title}",
+        "max-length": 48,
+        "separate-outputs": true
+    },
+
+    "clock": {
+        "format": "{:%I:%M %p}",
+        "format-alt": "{:%A, %B %d  ·  %I:%M %p}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>"
+    },
+
+
+    "mpris": {
+        "format": "{dynamic}",
+        "format-paused": "paused {dynamic}",
+        "dynamic-len": 32,
+        "dynamic-order": ["artist", "title"]
+    },
+
+    "wireplumber": {
+        "format": "vol {volume}%",
+        "format-muted": "vol muted",
+        "on-click": "pavucontrol"
+    },
+
+    "network": {
+        "format-wifi": "net {essid}",
+        "format-ethernet": "net wired",
+        "format-disconnected": "net offline",
+        "tooltip-format": "{ipaddr}",
+        "on-click": "nm-connection-editor"
+    },
+
+    "cpu":    { "format": "cpu {usage}%", "interval": 3 },
+    "memory": { "format": "mem {percentage}%", "interval": 5 },
+
+    "battery": {
+        "states": { "warning": 30, "critical": 15 },
+        "format": "bat {capacity}%",
+        "format-charging": "chg {capacity}%"
+    },
+
+    "tray": { "spacing": 10 },
+
+    // Far right: opens the settings / session menu.
+    "custom/settings": {
+        "format": "cfg",
+        "tooltip": true,
+        "tooltip-format": "Power menu",
+        "on-click": "~/.local/bin/sway-power"
+    }
+}
